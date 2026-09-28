@@ -1,0 +1,4 @@
+.env
+.venv/
+bronze/
+__pycache__/
