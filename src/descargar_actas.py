@@ -7,7 +7,7 @@ import psycopg2
 import requests
 from dotenv import load_dotenv
 
-from carga import procesar_acta
+from carga_acta import procesar_acta
 
 load_dotenv()
 

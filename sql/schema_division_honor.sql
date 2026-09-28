@@ -64,6 +64,9 @@ CREATE TABLE IF NOT EXISTS jugadores (
     dorsal           SMALLINT NOT NULL,
     nombre_corto     TEXT NOT NULL,
     nombre_completo  TEXT,
+    posicion         TEXT,
+    posicion_detalle TEXT,
+    posicion_origen  TEXT,
     creado_en        TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (equipo_id, temporada, dorsal)
 );
@@ -140,6 +143,7 @@ ev AS (
 )
 SELECT
     j.id AS jugador_id,
+    j.cod_rfef,
     j.nombre_corto,
     j.nombre_completo,
     e.nombre AS equipo,

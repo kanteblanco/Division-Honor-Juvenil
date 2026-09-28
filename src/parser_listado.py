@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 
 URL = "https://rfef.es/es/resultados"
 HEADERS = {"User-Agent": "proyecto-portfolio-analitica/0.1 (scraper educativo)"}
+COMPETITION = 33836116
+GROUP = 33836123
 
 RE_CODACTA = re.compile(r"CodActa=(\d+)")
 RE_ESCUDO = re.compile(r"/novanet/\d+x\d+/(\d+)_")
@@ -13,7 +15,7 @@ RE_FECHA = re.compile(r"(\d{2}/\d{2}/\d{4})\s*-\s*(\d{2}:\d{2})")
 
 
 def parse_jornada(jornada):
-    params = {"competition": 33836116, "group": 33836123, "journey": jornada}
+    params = {"competition": COMPETITION, "group": GROUP, "journey": jornada}
     r = requests.get(URL, params=params, headers=HEADERS, timeout=30)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "lxml")
