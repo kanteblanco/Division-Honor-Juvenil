@@ -67,6 +67,8 @@ CREATE TABLE IF NOT EXISTS jugadores (
     posicion         TEXT,
     posicion_detalle TEXT,
     posicion_origen  TEXT,
+    anyo_nacimiento  SMALLINT,
+    edad_origen      TEXT,
     creado_en        TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (equipo_id, temporada, dorsal)
 );
