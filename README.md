@@ -29,7 +29,8 @@ clasificaciones y goleadores.
 Las actas arbitrales, en cambio, son públicas y contienen alineaciones con
 dorsal, sustituciones con minuto exacto, goles y tarjetas. A partir de ahí se
 pueden derivar métricas que no publica nadie: minutos reales por jugador,
-goles por 90 minutos, ratio de titularidad, rotación por equipo.
+goles por 90 minutos, ratio de titularidad, rotación por equipo y reparto de
+minutos por año de nacimiento.
 
 Este proyecto convierte esas actas en una base de datos relacional consultable.
 
@@ -57,7 +58,7 @@ bronze/                        →  HTML crudo guardado en disco
         ↓
 parser_acta.py                 →  alineaciones, sustituciones, goles, tarjetas
         ↓
-carga.py                       →  upsert idempotente en PostgreSQL
+carga_acta.py                  →  upsert idempotente en PostgreSQL
         ↓
 v_jugador_temporada            →  capa de consumo (Power BI, consultas)
 ```
@@ -81,20 +82,30 @@ Crear la base y cargar el esquema:
 
 ```bash
 createdb -U postgres futbol
-psql -U postgres -d futbol -f sql/schema.sql
+psql -U postgres -d futbol -f sql/schema_division_honor.sql
 ```
 
 Copiar `.env.example` a `.env` y rellenar la cadena de conexión.
 
 ## Uso
 
+Actualización semanal, un solo comando:
+
 ```bash
-python src/cargar.py              # listado de partidos por jornada
-python src/descargar_actas.py     # actas pendientes: descarga y carga
+python src/pipeline.py
 ```
 
-El segundo script solo pide al servidor las actas que no estén ya en
-`bronze/`, y respeta una pausa de 5 segundos entre peticiones.
+Lee del calendario qué jornadas se han jugado, actualiza el listado, y
+descarga y parsea las actas que falten. Solo pide al servidor lo que no tiene
+ya en `bronze/`, con cinco segundos de pausa entre peticiones.
+
+Enriquecimiento de posiciones y curación manual:
+
+```bash
+python src/posiciones.py --descargar
+python src/posiciones.py --cargar
+python src/importar_curado.py fichero.csv --simular
+```
 
 ## Notas sobre los datos
 
@@ -117,13 +128,37 @@ registradas como no asignadas en lugar de descartarse en silencio.
 entre partidos y temporadas. Los equipos, por el código que aparece en la URL
 de su escudo, más fiable que el nombre porque la grafía varía entre temporadas.
 
+**Posición y año de nacimiento.** El acta no los recoge. La posición procede de
+lapreferente.com, una fuente colaborativa de cobertura irregular, cruzada por
+conjuntos de palabras del nombre; el año de nacimiento es curación manual. Las
+columnas `posicion_origen` y `edad_origen` registran la procedencia de cada
+dato, y los huecos se dejan vacíos en lugar de rellenarse con valores
+inventados.
+
 **Validación.** Los agregados se han contrastado contra las fichas oficiales de
 estadísticas de jugador de la RFEF, que publican convocatorias, titularidades y
 goles por temporada. Los números coinciden.
+
+## Próximos pasos
+
+- **Cuadro de mando en Power BI** sobre la vista agregada: reparto de minutos
+  por año de nacimiento, rotación por equipo, eficacia goleadora.
+- **Convocatorias de selecciones** autonómicas, territoriales y nacionales.
+  Añadiría una señal de valoración externa al dataset y permitiría preguntar
+  si el rendimiento medible predice la convocatoria.
+- **Temporadas anteriores.** El selector de la RFEF llega hasta 1990 y el
+  código de jugador es estable, así que cargar 2025-26 permitiría seguir
+  trayectorias y detectar cambios de club.
+- **Resto de grupos de División de Honor.** Técnicamente es cambiar un
+  parámetro; el coste real está en la curación manual, que se multiplicaría
+  por siete.
+- **Motivos de amonestación.** El acta recoge el motivo literal de cada tarjeta
+  según el reglamento. Clasificarlos daría una dimensión disciplinaria que no
+  publica ninguna otra fuente.
 
 ## Aviso sobre datos personales
 
 La competición es de categoría juvenil y los jugadores son menores de edad. La
 base guarda únicamente datos deportivos. Las fotografías que vienen incrustadas
-en las actas no se almacenan, y la base de datos no se publica en este
-repositorio.
+en las actas no se almacenan, y ni la base de datos ni los ficheros de curación
+manual se publican en este repositorio.
