@@ -2,3 +2,4 @@
 .venv/
 bronze/
 __pycache__/
+*.csv
