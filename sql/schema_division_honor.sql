@@ -122,14 +122,14 @@ CREATE INDEX IF NOT EXISTS ix_eventos_tipo ON eventos (tipo);
 -- VISTA: agregado por jugador y temporada
 -- Es la capa que luego consumes desde Power BI
 -- ---------------------------------------------------------------------
-CREATE OR REPLACE VIEW v_jugador_temporada AS
+CREATE VIEW v_jugador_temporada AS
 WITH part AS (
     SELECT
         jugador_id,
-        COUNT(*)                                AS convocatorias,
-        COUNT(*) FILTER (WHERE minutos > 0)     AS partidos_jugados,
-        COUNT(*) FILTER (WHERE titular)         AS titularidades,
-        COALESCE(SUM(minutos), 0)               AS minutos
+        COUNT(*)                            AS convocado,
+        COUNT(*) FILTER (WHERE minutos > 0) AS partidos_jugados,
+        COUNT(*) FILTER (WHERE titular)     AS titularidades,
+        COALESCE(SUM(minutos), 0)           AS minutos
     FROM participaciones
     GROUP BY jugador_id
 ),
@@ -148,10 +148,15 @@ SELECT
     j.cod_rfef,
     j.nombre_corto,
     j.nombre_completo,
+    j.equipo_id,
     e.nombre AS equipo,
+    e.grupo,
     j.temporada,
     j.dorsal,
-    COALESCE(part.convocatorias, 0)     AS convocatorias,
+    j.posicion,
+    j.posicion_detalle,
+    j.anyo_nacimiento,
+    COALESCE(part.convocado, 0)         AS convocado,
     COALESCE(part.partidos_jugados, 0)  AS partidos_jugados,
     COALESCE(part.titularidades, 0)     AS titularidades,
     COALESCE(part.minutos, 0)           AS minutos,

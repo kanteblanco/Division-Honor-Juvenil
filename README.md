@@ -1,7 +1,8 @@
 # División de Honor Juvenil — Grupo 7
 
 Base de datos de estadísticas de jugadores construida a partir de las actas
-arbitrales oficiales de la Real Federación Española de Fútbol.
+arbitrales oficiales de la Real Federación Española de Fútbol, con un cuadro
+de mando en Power BI sobre ella.
 
 Temporada 2026-2027. Grupo 7: dieciséis clubes de la Comunidad Valenciana,
 Murcia y Baleares.
@@ -34,6 +35,23 @@ minutos por año de nacimiento.
 
 Este proyecto convierte esas actas en una base de datos relacional consultable.
 
+## Cuadro de mando
+
+![Reparto de minutos por año de nacimiento](docs/reparto-minutos.png)
+
+El gráfico responde a una pregunta que ninguna clasificación contesta: **qué
+equipos dan minutos reales a los jugadores de primer y segundo año**. Medir
+minutos en lugar de contar jugadores es lo que distingue una apuesta de
+cantera de un banquillo lleno de suplentes jóvenes.
+
+La categoría "Sin dato" se muestra a propósito en lugar de ocultarse: refleja
+cuánta curación manual queda pendiente.
+
+![Detalle por equipo](docs/detalle-equipo.png)
+
+Haciendo clic en un equipo se navega a su plantilla, con posición, año de
+nacimiento, minutos, titularidades y goles por jugador.
+
 ## Qué contiene
 
 Estado actual: jornadas 1 a 3, 24 partidos, 343 jugadores.
@@ -45,7 +63,7 @@ Estado actual: jornadas 1 a 3, 24 partidos, 343 jugadores.
 | `jugadores` | Ficha por jugador, identificado por su código RFEF |
 | `participaciones` | Una fila por jugador convocado y partido, con minutos calculados |
 | `eventos` | Goles, amarillas y rojas, con minuto |
-| `v_jugador_temporada` | Vista agregada: minutos, goles, goles/90, titularidades |
+| `v_jugador_temporada` | Vista agregada que consume Power BI |
 
 ## Arquitectura
 
@@ -60,13 +78,18 @@ parser_acta.py                 →  alineaciones, sustituciones, goles, tarjetas
         ↓
 carga_acta.py                  →  upsert idempotente en PostgreSQL
         ↓
-v_jugador_temporada            →  capa de consumo (Power BI, consultas)
+v_jugador_temporada            →  capa de consumo
+        ↓
+Power BI                       →  cuadro de mando
 ```
 
 La capa `bronze/` guarda el HTML tal como llega. Cambiar la lógica de parseo y
 reprocesar las 24 actas no cuesta ni una petición al servidor. Toda la carga
 usa `ON CONFLICT DO UPDATE`, así que el pipeline es idempotente: se puede
 relanzar sin duplicar datos.
+
+El modelo de Power BI se conecta a las tablas y a la vista sin filtros fijos,
+de modo que añadir grupos o temporadas no obliga a rehacer el informe.
 
 ## Instalación
 
@@ -141,8 +164,8 @@ goles por temporada. Los números coinciden.
 
 ## Próximos pasos
 
-- **Cuadro de mando en Power BI** sobre la vista agregada: reparto de minutos
-  por año de nacimiento, rotación por equipo, eficacia goleadora.
+- **Más páginas en el cuadro de mando**: rotación de plantilla, eficacia
+  goleadora por posición y perfil disciplinario.
 - **Convocatorias de selecciones** autonómicas, territoriales y nacionales.
   Añadiría una señal de valoración externa al dataset y permitiría preguntar
   si el rendimiento medible predice la convocatoria.
@@ -159,6 +182,7 @@ goles por temporada. Los números coinciden.
 ## Aviso sobre datos personales
 
 La competición es de categoría juvenil y los jugadores son menores de edad. La
-base guarda únicamente datos deportivos. Las fotografías que vienen incrustadas
-en las actas no se almacenan, y ni la base de datos ni los ficheros de curación
-manual se publican en este repositorio.
+base guarda únicamente datos deportivos. Las fotografías incrustadas en las
+actas no se almacenan; la base de datos, los ficheros de curación manual y el
+fichero de Power BI no se publican en este repositorio; y las capturas de
+pantalla no muestran nombres de jugadores.
