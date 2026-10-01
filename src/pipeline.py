@@ -36,7 +36,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from carga_acta import procesar_acta
 from carga_listado import cargar_jornada
-from parser_listado import COMPETITION, GROUP, HEADERS, URL
+from parser_listado import COMPETITION, GRUPOS, HEADERS, URL
 
 load_dotenv()
 
@@ -54,10 +54,10 @@ sesion.headers["Referer"] = "https://rfef.es/"
 
 # ------------------------------------------------------------- calendario
 
-def jornadas_jugadas() -> list[int]:
+def jornadas_jugadas(grupo: int) -> list[int]:
     """Jornadas cuya fecha ya ha pasado, leídas del propio calendario."""
-    r = sesion.get(URL, params={"competition": COMPETITION, "group": GROUP},
-                   timeout=30)
+    r = sesion.get(URL, params={"competition": COMPETITION,
+                        "group": GRUPOS[grupo]}, timeout=30)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "lxml")
 
@@ -170,6 +170,7 @@ def resumen(conn) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--solo-actas", action="store_true")
+    ap.add_argument("--grupo", type=int, default=7, choices=range(1, 8))
     ap.add_argument("--desde", type=int, default=1)
     args = ap.parse_args()
 
@@ -178,11 +179,11 @@ def main() -> None:
 
     try:
         if not args.solo_actas:
-            jornadas = [j for j in jornadas_jugadas() if j >= args.desde]
-            print(f"Jornadas ya jugadas: {jornadas}\n")
+            jornadas = [j for j in jornadas_jugadas(args.grupo) if j >= args.desde]
+            print(f"Grupo {args.grupo} | jornadas jugadas: {jornadas}\n")
 
             for j in jornadas:
-                n = cargar_jornada(conn, j)
+                n = cargar_jornada(conn, j, args.grupo)
                 print(f"  J{j:02d}  {n} partidos")
                 time.sleep(PAUSA)
 

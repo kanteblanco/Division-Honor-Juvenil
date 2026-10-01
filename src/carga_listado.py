@@ -10,7 +10,7 @@ from parser_listado import parse_jornada
 load_dotenv()
 
 TEMPORADA = "2026-2027"
-GRUPO = 7
+
 
 
 def norm(texto):
@@ -20,7 +20,7 @@ def norm(texto):
     return re.sub(r"\s+", " ", t).strip()
 
 
-def upsert_equipo(cur, equipo):
+def upsert_equipo(cur, equipo, grupo):
     cur.execute(
         """
         INSERT INTO dh.equipos (cod_novanet, nombre, nombre_norm, grupo)
@@ -30,17 +30,17 @@ def upsert_equipo(cur, equipo):
                 nombre_norm = EXCLUDED.nombre_norm
         RETURNING id
         """,
-        (equipo["cod_novanet"], equipo["nombre"], norm(equipo["nombre"]), GRUPO),
+        (equipo["cod_novanet"], equipo["nombre"], norm(equipo["nombre"]), grupo),
     )
     return cur.fetchone()[0]
 
 
-def cargar_jornada(conn, jornada):
-    partidos = parse_jornada(jornada)
+def cargar_jornada(conn, jornada, grupo=7):
+    partidos = parse_jornada(jornada, grupo)
     with conn.cursor() as cur:
         for p in partidos:
-            local_id = upsert_equipo(cur, p["local"])
-            visitante_id = upsert_equipo(cur, p["visitante"])
+            local_id = upsert_equipo(cur, p["local"], grupo)
+            visitante_id = upsert_equipo(cur, p["visitante"], grupo)
             cur.execute(
                 """
                 INSERT INTO dh.partidos (
@@ -54,7 +54,7 @@ def cargar_jornada(conn, jornada):
                     goles_visitante = EXCLUDED.goles_visitante,
                     actualizado_en  = now()
                 """,
-                (p["cod_acta"], TEMPORADA, GRUPO, p["jornada"], p["fecha"],
+                (p["cod_acta"], TEMPORADA, grupo, p["jornada"], p["fecha"],
                  p["estadio"], local_id, visitante_id, p["goles_local"],
                  p["goles_visitante"], p["acta_url"]),
             )
