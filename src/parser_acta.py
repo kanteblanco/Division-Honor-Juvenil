@@ -31,7 +31,7 @@ def parse_alineaciones(soup):
         for tr in filas:
             celdas = tr.find_all("td")
             jugadores.append({
-                "cod_rfef": int(RE_JUGADOR.search(tr["onclick"]).group(1)),
+                "cod_federativo": int(RE_JUGADOR.search(tr["onclick"]).group(1)),
                 "dorsal": int(celdas[0].get_text(strip=True)),
                 "nombre": celdas[-1].get_text(" ", strip=True),
                 "titular": titular,

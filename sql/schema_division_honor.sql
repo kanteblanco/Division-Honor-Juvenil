@@ -59,7 +59,7 @@ CREATE INDEX IF NOT EXISTS ix_partidos_pendiente ON partidos (acta_parseada) WHE
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS jugadores (
     id               SERIAL PRIMARY KEY,
-	cod_rfef         INTEGER UNIQUE,
+	cod_federativo   INTEGER UNIQUE,
     equipo_id        INT  NOT NULL REFERENCES equipos(id),
     temporada        TEXT NOT NULL,
     competicion      TEXT NOT NULL DEFAULT 'DH',
@@ -147,7 +147,7 @@ ev AS (
 )
 SELECT
     j.id AS jugador_id,
-    j.cod_rfef,
+    j.cod_federativo,
     j.nombre_corto,
     j.nombre_completo,
     j.equipo_id,

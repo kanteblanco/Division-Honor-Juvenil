@@ -93,7 +93,7 @@ def importar(conn, filas: list[dict], simular: bool) -> None:
             revisado = bool(limpio(fila.get("revisado_pos")))
 
             cur.execute(
-                "SELECT id, nombre_completo FROM dh.jugadores WHERE cod_rfef = %s",
+                "SELECT id, nombre_completo FROM dh.jugadores WHERE cod_federativo = %s",
                 (cod,),
             )
             encontrado = cur.fetchone()

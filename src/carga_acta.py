@@ -47,14 +47,14 @@ def procesar_acta(conn, cod_acta, html):
             cur.execute(
                 """
                 INSERT INTO dh.jugadores
-                    (cod_rfef, equipo_id, temporada, dorsal, nombre_corto, nombre_completo)
+                    (cod_federativo, equipo_id, temporada, dorsal, nombre_corto, nombre_completo)
                 VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT (cod_rfef) DO UPDATE
+                ON CONFLICT (cod_federativo) DO UPDATE
                     SET dorsal = EXCLUDED.dorsal,
                         nombre_completo = EXCLUDED.nombre_completo
                 RETURNING id
                 """,
-                (j["cod_rfef"], equipo_id, TEMPORADA, j["dorsal"],
+                (j["cod_federativo"], equipo_id, TEMPORADA, j["dorsal"],
                  j["nombre"], j["nombre"]),
             )
             jugador_id = cur.fetchone()[0]

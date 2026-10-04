@@ -44,7 +44,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 RAW = RAIZ / "bronze"
 
 
-PAUSA = 5
+PAUSA = 10
 RE_JORNADA = re.compile(r"^(\d+)\s*\((\d{2})-(\d{2})-(\d{4})\)")
 
 sesion = requests.Session()
